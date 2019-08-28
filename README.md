@@ -11,4 +11,4 @@ El link anexo te lleva directamente a la pagina del RETO, en este te puedes regi
 https://www.retoactinverimagen.com/minisitio/reto2019/index.html
 
 
-En el laboratori FINTRADE del programa de Finanzas y Comercio Internacioanl, nos reuniremos todos los martes hasta el 29 de octubre a las 2 de la tarde para comentar algunos detalles del concurso, estrategias y para hablar entre todos los participantes las posibles opciones de inversión a lo largo del concurso.
+En el laboratorio FINTRADE del programa de Finanzas y Comercio Internacioanl, nos reuniremos todos los martes hasta el 29 de octubre a las 2 de la tarde para comentar algunos detalles del concurso, estrategias y para hablar entre todos los participantes las posibles opciones de inversión a lo largo del concurso.
