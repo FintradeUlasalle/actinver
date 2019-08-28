@@ -1,0 +1,198 @@
+---
+title: "Reporte Semanal"
+author: "Andrés Martínez"
+date: "28 8 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Reporte del Movimiento de las acciones del mercado mexicano
+
+Este documento es una ejemplo para la creación de reportes semanales del concurso Actinver. Para esto primero vamos a descargar las acciones que cotizan en el mercado mexicano, usando la libreria quantmod. Con ayuda de la función getSymbols y usando como recurso yahoo se descargarán las acciones que se desean analizar como en el ejemplo siguiente:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(quantmod)
+simbolos=c("AMXL.MX","CEMEXCPO.MX","GMEXICOB.MX","MEXCHEM.MX","ALFAA.MX","GFNORTEO.MX")
+getSymbols(simbolos,src="yahoo",from="2019-01-01",to="2019-08-01")
+
+```
+Por lo general descargamos períodos de un año, pero pueden ser mas o menos dependiendo del análisis que se desee hacer.
+## Gráficos
+
+Una vez descargadas las acciones, podemos hacer un análisis grafico.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+chartSeries(ALFAA.MX)
+
+```
+
+Espacio para comentarios
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+barChart(MEXCHEM.MX,theme='white.mono',bar.type='hlc',TA="addWMA();addSMA();addEVWMA();addROC()") 
+
+```
+
+Espacio para comentarios
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+candleChart(GMEXICOB.MX,theme='white', type='candles',TA="addVo();addSAR();addCCI()")
+
+```
+
+Espacio para comentarios
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+chartSeries(CEMEXCPO.MX, theme="white",TA="addVo();addBBands();addCCI()") 
+
+#chartSeries(ALFAA.MX, theme="white") #draw the chart 
+#addVo() #add volume 
+#addBBands() #add Bollinger Bands 
+#addCCI() #add Commodity Channel Index
+```
+
+
+Cada una de estas gráficas, se puede crear solo usando la libreria quantmod, se debe tener cuidado con la selección del análisis técnico para evitar llenar el gráfico de objetos y hacer dificil el análisis.
+
+
+## Analisis de rendimientos
+
+
+Evaluar la serie a través de los rendimientos es más eficiente algunas veces que solo mirando los precios. En este caso primero se obtienen los rendimientos con una función que se llama Delt y le quitamos el valor inicial con ayuda de [-1]. Siempre se va a trabajar con los precios de cierre. Para diferenciar los precios de los rendimientos, usaremos letras minusculas.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+alfaa=Delt(ALFAA.MX$ALFAA.MX.Close)[-1]
+cemex=Delt(CEMEXCPO.MX$CEMEXCPO.MX.Close)[-1]
+gmexicob=Delt(GMEXICOB.MX$GMEXICOB.MX.Close)[-1]
+mexcehm=Delt(MEXCHEM.MX$MEXCHEM.MX.Close)[-1]
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+par(mfrow=c(2,2))
+plot(alfaa,col="red")
+plot(cemex,col="blue")
+plot(gmexicob,col="green")
+plot(mexcehm,col="brown")
+
+
+```
+
+
+Espacio para comentarios
+
+## Creación del portafolio
+
+En este espacio crearemos el portafolio semanal con las acciones que ustedes escogieron Primero se obtienen las medidas necesarias.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+library(dplyr)
+# Juntamos  los rendimientos en una sola tabla
+PEVR=as.data.frame(alfaa)
+PEVR=mutate(PEVR,cemex)
+PEVR=mutate(PEVR,gmexicob)
+PEVR=mutate(PEVR,mexcehm)
+colnames(PEVR)=c("alfaa","cemex","gmexicob","mexcehm")
+
+# Obtenemos las estadísticas necesarias
+
+
+EVP=c(mean(PEVR$alfaa),mean(PEVR$cemex),mean(PEVR$gmexicob),mean(PEVR$mexcehm))
+
+SDP=c(sd(PEVR$alfaa),sd(PEVR$cemex),sd(PEVR$gmexicob),sd(PEVR$mexcehm))
+
+activos <- c("Alfaa", "Cemex", "GMEXICOB","MEXCEHM")
+mu.vec = EVP*5
+
+SDP=SDP*sqrt(5)
+names(mu.vec) = activos
+
+qw=SDP[1]*SDP[1]
+wq=cor(PEVR$alfaa,PEVR$cemex)*SDP[1]*SDP[2]
+ee=cor(PEVR$alfaa,PEVR$gmexicob)*SDP[1]*SDP[3]
+rr=cor(PEVR$alfaa,PEVR$mexcehm)*SDP[1]*SDP[4]
+tt=SDP[2]*SDP[2]
+uu=cor(PEVR$cemex,PEVR$gmexicob)*SDP[2]*SDP[3]
+ui=cor(PEVR$cemex,PEVR$mexcehm)*SDP[2]*SDP[4]
+qq=SDP[3]*SDP[3]
+ww=cor(PEVR$gmexicob,PEVR$mexcehm)*SDP[3]*SDP[4]
+rt=SDP[4]*SDP[4]
+sigma.mat = matrix(c(qw,wq,ee,rr,wq,tt,uu,ui,ee,uu,qq,ww,rr,ui,ww,rt),
+                   nrow=4, ncol=4)
+dimnames(sigma.mat) = list(activos, activos)
+sd.vec = sqrt(diag(sigma.mat))
+resultados=as.data.frame(mu.vec*100)
+resultados=mutate(resultados,SDP*100)
+rownames(resultados)=c("ALFAA", "CEMEX", "GMEXICOB","MEXCEHM")
+colnames(resultados)=c("EV", "VOL")
+library(knitr)
+kable(resultados, booktabs=TRUE,caption = "Resultados")
+
+
+
+
+```
+
+
+Espacio para comentarios
+
+## Portafolio
+
+Una vez se obtienen las medidas necesarias, se hace el proceso de portafolio
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(quadprog)
+D.mat = 2*sigma.mat
+d.vec = rep(0, 4)
+A.mat = cbind(rep(1,4), diag(4))
+b.vec = c(1, rep(0,4))
+# use solve.QP to minimize portfolio variance
+qp.out = solve.QP(Dmat=D.mat, dvec=d.vec,
+                  Amat=A.mat, bvec=b.vec, meq=1)
+# compute mean, variance and sd
+w.gmin.ns = qp.out$solution
+names(w.gmin.ns) = names(mu.vec)
+er.gmin.ns = as.numeric(crossprod(w.gmin.ns, mu.vec))
+var.gmin.ns = as.numeric(t(w.gmin.ns)%*%sigma.mat%*%w.gmin.ns)
+sdp=sqrt(var.gmin.ns)
+
+
+```
+
+
+
+
+
+```{r FEC,fig.cap="Curva Eficiente",echo=FALSE, message=FALSE, warning=FALSE}
+#install.packages("IntroCompFinR", repos="http://R-Forge.R-project.org")
+library(IntroCompFinR)
+library(quadprog)
+library(PerformanceAnalytics)
+# compute efficient frontier with no-short sales
+ef <- efficient.frontier(mu.vec, sigma.mat, alpha.min=0, alpha.max=1, nport=10)
+
+plot(ef$sd, ef$er, type="b", ylim=c(min(ef$er), max(ef$er)), xlim=c(min(ef$sd),max(ef$sd)), 
+     pch=16, col="blue", cex=2, ylab=expression(mu[p]), xlab=expression(sigma[p]))
+title("Posibles portafolios a 20 días")
+
+
+```
+
+
+Espacio para comentarios
+
+
+```{r ESC,echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+kable(ef$weights, booktabs=TRUE, caption = "Ponderación")
+```
