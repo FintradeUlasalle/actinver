@@ -1,5 +1,5 @@
 # Reto Actinver
-Pagina para el desarrollo de códigos del concurso
+Pagina para el desarrollo de códigos del concurso que simula un ambiente de inversión en la Bolsa de Valores Mexicana
 
 
 ¿Qué es el Reto?
